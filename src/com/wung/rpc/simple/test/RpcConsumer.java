@@ -18,5 +18,13 @@ public class RpcConsumer {
 			System.out.println(result);
 		}
 		System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
+		
+		User user = new User();
+		user.setId(0);
+		user.setName("jack");
+		
+		RpcResult result = helloService.sayHello(user);
+		System.out.println(result);
 	}
+	
 }

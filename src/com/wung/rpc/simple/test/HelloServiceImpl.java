@@ -13,4 +13,13 @@ public class HelloServiceImpl implements HelloService {
 		return "Hello " + name;
 	}
 	
+	@Override
+	public RpcResult sayHello(User user) {
+		RpcResult rpcResult = new RpcResult();
+		rpcResult.setCode(0);
+		rpcResult.setMsg("success");
+		rpcResult.setData("Hello " + user.getName());
+		return rpcResult;
+	}
+	
 }
