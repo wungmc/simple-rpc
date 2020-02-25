@@ -12,9 +12,11 @@ public class RpcConsumer {
 	
 	public static void main(String[] args) {
 		HelloService helloService = RpcFramework.refer(HelloService.class, "localhost", 2888);
-		for (int i = 0; i < 10; i++) {
+		long beginTime = System.currentTimeMillis();
+		for (int i = 0; i < 100; i++) {
 			String result = helloService.sayHello("world" + i);
 			System.out.println(result);
 		}
+		System.out.println("cost: " + (System.currentTimeMillis() - beginTime));
 	}
 }

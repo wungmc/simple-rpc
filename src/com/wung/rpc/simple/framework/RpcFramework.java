@@ -96,30 +96,41 @@ public class RpcFramework {
 		// 循环等待客户端调用
 		ServerSocket server = new ServerSocket(port);
 		while (true) {
-			final Socket socket = server.accept();
 			try {
-				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-				try {
-					String methodName = inputStream.readUTF();
-					Class<?>[] parameterTypes = (Class<?>[]) inputStream.readObject();
-					Object[] args = (Object[]) inputStream.readObject();
-					
-					ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+				final Socket socket = server.accept();
+				// 多线程去跑调用
+				new Thread(() -> {
 					try {
-						Method method = service.getClass().getMethod(methodName, parameterTypes);
-						Object result = method.invoke(service, args);
-						outputStream.writeObject(result);
-					} catch (Throwable e) {
+						try {
+							ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+							try {
+								String methodName = inputStream.readUTF();
+								Class<?>[] parameterTypes = (Class<?>[]) inputStream.readObject();
+								Object[] args = (Object[]) inputStream.readObject();
+								
+								ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+								try {
+									Method method = service.getClass().getMethod(methodName, parameterTypes);
+									Object result = method.invoke(service, args);
+									outputStream.writeObject(result);
+								} catch (Throwable e) {
+									e.printStackTrace();
+									outputStream.writeObject(e);
+								} finally {
+									outputStream.close();
+								}
+							} finally {
+								inputStream.close();
+							}
+						} finally {
+							socket.close();
+						}
+					} catch (Exception e) {
 						e.printStackTrace();
-						outputStream.writeObject(e);
-					} finally {
-						outputStream.close();
 					}
-				} finally {
-					inputStream.close();
-				}
-			} finally {
-				socket.close();
+				}).start();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
